@@ -76,8 +76,8 @@ for the purposes of cancellation propagation and/or passing contextual bandit fe
 
 The `unit` input to `SelectArm` is a string that is used for enabling deterministic outcomes. This is useful for
 debugging and testing, but can also be used in the context of an experimentation platform to ensure that users get a
-consistent experience in between updates to the bandit reward model.
-Bandits are expected to always provide the same arm selection for the same set of reward estimates and unit.
+consistent experience in between updates to the bandit reward model. Bandits are expected to always provide the same arm
+selection for the same set of reward estimates and unit.
 
 The output of `SelectArm` is a struct containing the reward estimates, computed probabilities, and selected arm.
 
@@ -130,10 +130,40 @@ The `RewardSource` is expected to return the reward estimates conditioned on the
 
 A Mab `Strategy` computes arm-selection probabilities from the set of reward estimates.
 
+Mab provides the following strategies:
+
+- Thompson sampling
+- Epsilon-greedy
+- Proportional
+
+##### Thompson sampling
+
+The Thompson sampling strategy computes arm-selection probabilities using the following formula:
+
+![thompson sampling formula](https://user-images.githubusercontent.com/5180129/108559544-4a391e80-72b0-11eb-825c-483aba3dcd18.png)
+
+That is, the probability of selecting an arm under Thompson sampling is the integral of product of that arm's posterior
+PDF times the posterior CDFs of all other arms. The derivation of this formula is left as an exercise for the reader.
+
+Computing these probabilities requires one-dimensional integration, which is provided by the `numint` subpackage.
+
+##### Epsilon-greedy
+
+This is the basic epsilon-greedy selection strategy. The probability of selecting an arm under epsilon greedy is readily
+computed from a closed-form solution without the need for numerical integration.
+
+##### Proportional
+
+The proportional sampler computes arm selection probabilities proportional to some input weights. This is not a real
+bandit strategy, but exists to allow users to effectively shift the interface between reward sources and bandit
+strategies. You can have you `RewardSource` return the desired selection probabilities as `Point` distributions and then
+use the `Proportional` strategy to make sure that the sampler uses the provided probabilities directly without an
+intermediate probability-computation step.
+
 #### Sampler
 
-A Mab `Sampler` selects an arm given the set of selection probabilities and a string.
-The default sampler implementation uses the SHA1 hash of the input string to determine the arm.
+A Mab `Sampler` selects an arm given the set of selection probabilities and a string. The default sampler implementation
+uses the SHA1 hash of the input string to determine the arm.
 
 ### Numerical Integration with numint
 
