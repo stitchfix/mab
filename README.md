@@ -186,5 +186,5 @@ The the `numint` README and documentation for more details.
 
 ## License
 
-Mab is licensed under the Apache 2.0 license. See the LICENSE file for terms and conditions for use, reproduction, and
+Mab and Numint are licensed under the Apache 2.0 license. See the LICENSE file for terms and conditions for use, reproduction, and
 distribution.
