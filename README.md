@@ -38,6 +38,7 @@ Example:
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/stitchfix/mab"
@@ -54,10 +55,10 @@ func main() {
 		mab.Beta(59, 718),
 	}
 
-	bandit := Bandit{
-		RewardSource: &RewardStub{Rewards: rewards},
-		Strategy:     NewThompson(numint.NewQuadrature()),
-		Sampler:      NewSha1Sampler(),
+	bandit := mab.Bandit{
+		RewardSource: &mab.RewardStub{Rewards: rewards},
+		Strategy:     mab.NewThompson(numint.NewQuadrature()),
+		Sampler:      mab.NewSha1Sampler(),
 	}
 
 	result, err := bandit.SelectArm(context.Background(), "user_id:12345")
