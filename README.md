@@ -143,7 +143,7 @@ The Thompson sampling strategy computes arm-selection probabilities using the fo
 
 ![thompson sampling formula](https://user-images.githubusercontent.com/5180129/108559544-4a391e80-72b0-11eb-825c-483aba3dcd18.png)
 
-That is, the probability of selecting an arm under Thompson sampling is the integral of product of that arm's posterior
+That is, the probability of selecting an arm under Thompson sampling is the integral of that arm's posterior
 PDF times the posterior CDFs of all other arms. The derivation of this formula is left as an exercise for the reader.
 
 Computing these probabilities requires one-dimensional integration, which is provided by the `numint` subpackage.
@@ -183,7 +183,7 @@ The default quadrature rule and other parameters for the `numint` quadrature int
 trial-and-error to provide a good tradeoff between speed and reliability for a wide range of inputs including many
 combinations of normal and beta distributions.
 
-The the `numint` README and documentation for more details.
+See the `numint` README and documentation for more details.
 
 ## License
 
