@@ -1,4 +1,4 @@
-# mab
+# mab: Multi-Armed Bandits Go Library
 
 <p align="center"><img src="https://user-images.githubusercontent.com/5180129/108548622-f2df8200-72a0-11eb-8cc2-b4f1e839dffd.png" width="720"></p>
 
