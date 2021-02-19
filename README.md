@@ -167,6 +167,23 @@ uses the SHA1 hash of the input string to determine the arm.
 
 ### Numerical Integration with numint
 
+The Thompson sampling strategy depends on an integrator for computing probabilities.
+
+```go
+type Integrator interface {
+    Integrate(f func (float64) float64, a, b float64) (float64, error)
+}
+```
+
+The `numint` package provides a quadrature-based implementation that can be used for Thompson sampling. It can be used
+effectively with just the default settings, or can be fully customized by the user.
+
+The default quadrature rule and other parameters for the `numint` quadrature integrator have been found through
+trial-and-error to provide a good tradeoff between speed and reliability for a wide range of inputs including many
+combinations of normal and beta distributions.
+
+The the `numint` README and documentation for more details.
+
 ## License
 
 Mab is licensed under the Apache 2.0 license. See the LICENSE file for terms and conditions for use, reproduction, and
