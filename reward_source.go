@@ -1,29 +1,88 @@
 package mab
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 )
 
+func NewHTTPRewardSource(client httpDoer, url string, parser RewardParser, opts ...RewardSourceOption) *HTTPRewardSource {
+	s := &HTTPRewardSource{
+		client:    client,
+		url:       url,
+		parser:    parser,
+		extractor: &NoopExtractor{},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+type RewardSourceOption func(source *HTTPRewardSource)
+
+type NoopExtractor struct{}
+
+func (n *NoopExtractor) BodyFromContext(context.Context) ([]byte, error) {
+	return []byte(``), nil
+}
+
+func (n *NoopExtractor) HeadersFromContext(context.Context) (http.Header, error) {
+	return make(http.Header), nil
+}
+
 type HTTPRewardSource struct {
-	client httpClient
-	url    string
-	parser rewardParser
+	client    httpDoer
+	url       string
+	parser    RewardParser
+	extractor ContextExtractor
 }
 
-func (h *HTTPRewardSource) GetRewards(context.Context) ([]Dist, error) {
-	panic("not implemented")
+func (h *HTTPRewardSource) GetRewards(ctx context.Context) ([]Dist, error) {
+	body, err := h.extractor.BodyFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	headers, err := h.extractor.HeadersFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", h.url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header = headers
+
+	resp, err := h.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return h.parser.Parse(respBody)
 }
 
-type httpClient interface {
-	Post(string, string, io.Reader) (*http.Response, error)
+type httpDoer interface {
+	Do(*http.Request) (*http.Response, error)
 }
 
-type rewardParser interface {
+type RewardParser interface {
 	Parse([]byte) ([]Dist, error)
+}
+
+type ContextExtractor interface {
+	BodyFromContext(context.Context) ([]byte, error)
+	HeadersFromContext(context.Context) (http.Header, error)
 }
 
 type ParseFunc func([]byte) ([]Dist, error)
