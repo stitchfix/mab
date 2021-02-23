@@ -34,6 +34,12 @@ func (n *NoopExtractor) HeadersFromContext(context.Context) (http.Header, error)
 	return make(http.Header), nil
 }
 
+func WithExtractor(ext ContextExtractor) RewardSourceOption {
+	return func(source *HTTPRewardSource) {
+		source.extractor = ext
+	}
+}
+
 type HTTPRewardSource struct {
 	client    HttpDoer
 	url       string
