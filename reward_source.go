@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func NewHTTPRewardSource(client httpDoer, url string, parser RewardParser, opts ...RewardSourceOption) *HTTPRewardSource {
+func NewHTTPRewardSource(client HttpDoer, url string, parser RewardParser, opts ...RewardSourceOption) *HTTPRewardSource {
 	s := &HTTPRewardSource{
 		client:    client,
 		url:       url,
@@ -35,7 +35,7 @@ func (n *NoopExtractor) HeadersFromContext(context.Context) (http.Header, error)
 }
 
 type HTTPRewardSource struct {
-	client    httpDoer
+	client    HttpDoer
 	url       string
 	parser    RewardParser
 	extractor ContextExtractor
@@ -72,7 +72,7 @@ func (h *HTTPRewardSource) GetRewards(ctx context.Context) ([]Dist, error) {
 	return h.parser.Parse(respBody)
 }
 
-type httpDoer interface {
+type HttpDoer interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
