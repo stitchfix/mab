@@ -40,40 +40,40 @@ func (b BetaDist) String() string {
 	return fmt.Sprintf("Beta(%f,%f)", b.Beta.Alpha, b.Beta.Beta)
 }
 
-func Point(x float64) PointDist {
-	return PointDist{x}
+func Point(mu float64) PointDist {
+	return PointDist{mu}
 }
 
 type PointDist struct {
-	X float64
+	Mu float64
 }
 
 func (p PointDist) Mean() float64 {
-	return p.X
+	return p.Mu
 }
 
 func (p PointDist) CDF(x float64) float64 {
-	if x >= p.X {
+	if x >= p.Mu {
 		return 1
 	}
 	return 0
 }
 
 func (p PointDist) Prob(x float64) float64 {
-	if x == p.X {
+	if x == p.Mu {
 		return math.NaN()
 	}
 	return 0
 }
 
 func (p PointDist) Rand() float64 {
-	return p.X
+	return p.Mu
 }
 
 func (p PointDist) Support() (float64, float64) {
-	return p.X, p.X
+	return p.Mu, p.Mu
 }
 
 func (p PointDist) String() string {
-	return fmt.Sprintf("Point(%f)", p.X)
+	return fmt.Sprintf("Point(%f)", p.Mu)
 }
