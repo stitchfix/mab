@@ -71,7 +71,7 @@ func TestSha1Sampler_getIndex(t *testing.T) {
 		},
 	}
 
-	s := Sha1Sampler{1000}
+	s := NewSha1Sampler()
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
