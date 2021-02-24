@@ -77,3 +77,7 @@ func (p PointDist) Support() (float64, float64) {
 func (p PointDist) String() string {
 	return fmt.Sprintf("Point(%f)", p.Mu)
 }
+
+func Null() PointDist {
+	return PointDist{math.Inf(-1)}
+}

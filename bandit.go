@@ -18,6 +18,24 @@ type Result struct {
 	Arm     int
 }
 
+// Dist represents a one-dimensional probability distribution.
+type Dist interface {
+	// CDF returns the cumulative distribution function evaluated at x.
+	CDF(x float64) float64
+
+	// Mean returns the mean of the distribution.
+	Mean() float64
+
+	// Prob returns the probability density function or probability mass function evaluated at x.
+	Prob(x float64) float64
+
+	// Rand returns a pseudo-random sample drawn from the distribution.
+	Rand() float64
+
+	// Support returns the range of values over which the distribution is considered non-zero for the purposes of numerical integration.
+	Support() (float64, float64)
+}
+
 // SelectArm gets the current reward estimates, computes the arm selection probability, and selects and arm index.
 func (b *Bandit) SelectArm(ctx context.Context, unit string, banditContext interface{}) (Result, error) {
 
@@ -56,24 +74,6 @@ func (b *Bandit) SelectArm(ctx context.Context, unit string, banditContext inter
 // The RewardSource should provide the reward estimates conditioned on those context features.
 type RewardSource interface {
 	GetRewards(context.Context, interface{}) ([]Dist, error)
-}
-
-// Dist represents a one-dimensional probability distribution.
-type Dist interface {
-	// CDF returns the cumulative distribution function evaluated at x.
-	CDF(x float64) float64
-
-	// Mean returns the mean of the distribution.
-	Mean() float64
-
-	// Prob returns the probability density function or probability mass function evaluated at x.
-	Prob(x float64) float64
-
-	// Rand returns a pseudo-random sample drawn from the distribution.
-	Rand() float64
-
-	// Support returns the range of values over which the distribution is considered non-zero for the purposes of numerical integration.
-	Support() (float64, float64)
 }
 
 // Strategy computes arm selection probabilities from a slice of Distributions.

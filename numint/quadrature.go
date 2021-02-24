@@ -55,6 +55,9 @@ type Quadrature struct {
 }
 
 func (q Quadrature) Integrate(f func(float64) float64, a float64, b float64) (float64, error) {
+	if a == b {
+		return 0, nil
+	}
 	if !q.canConverge() {
 		return math.NaN(), errors.New("integral cannot converge. check tolerance")
 	}
