@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func NewHTTPRewardSource(client HttpDoer, url string, parser RewardParser, opts ...RewardSourceOption) *HTTPRewardSource {
+func HTTPSource(client HttpDoer, url string, parser RewardParser, opts ...HTTPSourceOption) *HTTPRewardSource {
 	s := &HTTPRewardSource{
 		client:    client,
 		url:       url,
@@ -22,9 +22,9 @@ func NewHTTPRewardSource(client HttpDoer, url string, parser RewardParser, opts 
 	return s
 }
 
-type RewardSourceOption func(source *HTTPRewardSource)
+type HTTPSourceOption func(source *HTTPRewardSource)
 
-func WithMarshaler(m ContextMarshaler) RewardSourceOption {
+func WithContextMarshaler(m ContextMarshaler) HTTPSourceOption {
 	return func(source *HTTPRewardSource) {
 		source.marshaler = m
 	}
