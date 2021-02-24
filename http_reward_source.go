@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func HTTPSource(client HttpDoer, url string, parser RewardParser, opts ...HTTPSourceOption) *HTTPRewardSource {
-	s := &HTTPRewardSource{
+func NewHTTPSource(client HttpDoer, url string, parser RewardParser, opts ...HTTPSourceOption) *HTTPSource {
+	s := &HTTPSource{
 		client:    client,
 		url:       url,
 		parser:    parser,
@@ -22,22 +22,22 @@ func HTTPSource(client HttpDoer, url string, parser RewardParser, opts ...HTTPSo
 	return s
 }
 
-type HTTPSourceOption func(source *HTTPRewardSource)
+type HTTPSourceOption func(source *HTTPSource)
 
 func WithContextMarshaler(m ContextMarshaler) HTTPSourceOption {
-	return func(source *HTTPRewardSource) {
+	return func(source *HTTPSource) {
 		source.marshaler = m
 	}
 }
 
-type HTTPRewardSource struct {
+type HTTPSource struct {
 	client    HttpDoer
 	url       string
 	parser    RewardParser
 	marshaler ContextMarshaler
 }
 
-func (h *HTTPRewardSource) GetRewards(ctx context.Context, banditContext interface{}) ([]Dist, error) {
+func (h *HTTPSource) GetRewards(ctx context.Context, banditContext interface{}) ([]Dist, error) {
 	body, err := h.marshaler.Marshal(banditContext)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", h.url, bytes.NewBuffer(body))
