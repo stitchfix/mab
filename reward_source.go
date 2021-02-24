@@ -14,7 +14,7 @@ func NewHTTPRewardSource(client HttpDoer, url string, parser RewardParser, opts 
 		client:    client,
 		url:       url,
 		parser:    parser,
-		extractor: &NoopExtractor{},
+		marshaler: MarshalFunc(json.Marshal),
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -24,19 +24,9 @@ func NewHTTPRewardSource(client HttpDoer, url string, parser RewardParser, opts 
 
 type RewardSourceOption func(source *HTTPRewardSource)
 
-type NoopExtractor struct{}
-
-func (n *NoopExtractor) BodyFromContext(context.Context) ([]byte, error) {
-	return []byte(``), nil
-}
-
-func (n *NoopExtractor) HeadersFromContext(context.Context) (http.Header, error) {
-	return make(http.Header), nil
-}
-
-func WithExtractor(ext ContextExtractor) RewardSourceOption {
+func WithMarshaler(m ContextMarshaler) RewardSourceOption {
 	return func(source *HTTPRewardSource) {
-		source.extractor = ext
+		source.marshaler = m
 	}
 }
 
@@ -44,25 +34,16 @@ type HTTPRewardSource struct {
 	client    HttpDoer
 	url       string
 	parser    RewardParser
-	extractor ContextExtractor
+	marshaler ContextMarshaler
 }
 
-func (h *HTTPRewardSource) GetRewards(ctx context.Context) ([]Dist, error) {
-	body, err := h.extractor.BodyFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	headers, err := h.extractor.HeadersFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
+func (h *HTTPRewardSource) GetRewards(ctx context.Context, banditContext interface{}) ([]Dist, error) {
+	body, err := h.marshaler.Marshal(banditContext)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", h.url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
-	req.Header = headers
 
 	resp, err := h.client.Do(req)
 	if err != nil {
@@ -86,14 +67,17 @@ type RewardParser interface {
 	Parse([]byte) ([]Dist, error)
 }
 
-type ContextExtractor interface {
-	BodyFromContext(context.Context) ([]byte, error)
-	HeadersFromContext(context.Context) (http.Header, error)
+type ContextMarshaler interface {
+	Marshal(v interface{}) ([]byte, error)
 }
 
 type ParseFunc func([]byte) ([]Dist, error)
 
 func (p ParseFunc) Parse(b []byte) ([]Dist, error) { return p(b) }
+
+type MarshalFunc func(v interface{}) ([]byte, error)
+
+func (m MarshalFunc) Marshal(v interface{}) ([]byte, error) { return m(v) }
 
 func BetaFromJSON(data []byte) ([]Dist, error) {
 	var resp []struct {

@@ -19,7 +19,7 @@ type Result struct {
 }
 
 // SelectArm gets the current reward estimates, computes the arm selection probability, and selects and arm index.
-func (b *Bandit) SelectArm(ctx context.Context, unit string) (Result, error) {
+func (b *Bandit) SelectArm(ctx context.Context, unit string, banditContext interface{}) (Result, error) {
 
 	res := Result{
 		Rewards: make([]Dist, 0),
@@ -27,7 +27,7 @@ func (b *Bandit) SelectArm(ctx context.Context, unit string) (Result, error) {
 		Arm:     -1,
 	}
 
-	rewards, err := b.GetRewards(ctx)
+	rewards, err := b.GetRewards(ctx, banditContext)
 	if err != nil {
 		return res, err
 	}
@@ -55,7 +55,7 @@ func (b *Bandit) SelectArm(ctx context.Context, unit string) (Result, error) {
 // Features can be passed to the RewardSource using the Context argument, which is useful for contextual bandits.
 // The RewardSource should provide the reward estimates conditioned on those context features.
 type RewardSource interface {
-	GetRewards(context.Context) ([]Dist, error)
+	GetRewards(context.Context, interface{}) ([]Dist, error)
 }
 
 // Dist represents a one-dimensional probability distribution.
