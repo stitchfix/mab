@@ -32,7 +32,7 @@ func TestSha1Sampler_Sample(t *testing.T) {
 		},
 		{
 			"high and low probabilities",
-			[]float64{0.01, 0.99},
+			[]float64{0.001, 0.999},
 		},
 	}
 
