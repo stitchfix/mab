@@ -14,10 +14,13 @@ func NewSha1Sampler() *Sha1Sampler {
 	}
 }
 
+// Sha1Sampler is a Sampler that uses the SHA1 hash of input unit to select an arm index with probability proportional to some given weights.
 type Sha1Sampler struct {
 	numBuckets int
 }
 
+// Sample returns the selected arm for a given set of weights and input unit.
+// An error is returned if any negative weight is encountered.
 func (s *Sha1Sampler) Sample(weights []float64, unit string) (int, error) {
 
 	checkSum := sha1.Sum([]byte(unit))
@@ -49,11 +52,14 @@ func (s *Sha1Sampler) getIndex(weights []float64, bucket int) (int, error) {
 	curBucket := -1.0
 
 	for i, w := range weights {
+		if w < 0 {
+			return -1, fmt.Errorf("negative weight")
+		}
 		curBucket += w * float64(s.numBuckets) / sumWeights
 		if curBucket >= float64(bucket) {
 			return i, nil
 		}
 	}
 
-	return -1, fmt.Errorf("bucket out of range")
+	return -1, fmt.Errorf("bucket out of range") // this code should be unreachable
 }
