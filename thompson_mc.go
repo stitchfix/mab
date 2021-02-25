@@ -1,17 +1,23 @@
 package mab
 
+// NewThompsonMC returns a new ThompsonMC with numIterations.
 func NewThompsonMC(numIterations int) *ThompsonMC {
 	return &ThompsonMC{
 		NumIterations: numIterations,
 	}
 }
 
+// ThompsonMC is a Monte-Carlo based implementation of Thompson sampling Strategy.
+// It should not be used in production but is provided only as an example and for comparison with the Thompson Strategy,
+// which is much faster and more accurate.
 type ThompsonMC struct {
 	NumIterations   int
 	rewards         []Dist
 	counts, samples []float64
 }
 
+// ComputeProbs estimates the arm-selection probabilities by repeatedly sampling from the Dist for each arm,
+// and counting how many times each arm yields the maximal sampled value.
 func (t *ThompsonMC) ComputeProbs(rewards []Dist) ([]float64, error) {
 	t.rewards = rewards
 	return t.computeProbs(), nil
