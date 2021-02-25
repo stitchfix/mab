@@ -69,9 +69,39 @@ func TestSha1Sampler_getIndex(t *testing.T) {
 			999,
 			2,
 		},
+		{
+			"zero weights",
+			[]float64{0, 1, 0},
+			0,
+			1,
+		},
+		{
+			"zero weights",
+			[]float64{0, 1, 0},
+			500,
+			1,
+		},
+		{
+			"zero weights",
+			[]float64{0, 1, 0},
+			999,
+			1,
+		},
+		{
+			"zero weights",
+			[]float64{0, 1, 1},
+			499,
+			1,
+		},
+		{
+			"zero weights",
+			[]float64{0, 1, 1},
+			500,
+			2,
+		},
 	}
 
-	s := Sha1Sampler{1000}
+	s := NewSha1Sampler()
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

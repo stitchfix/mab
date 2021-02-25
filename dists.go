@@ -7,6 +7,8 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
+// Normal is a normal distribution for use with any bandit strategy.
+// For the purposes of Thompson sampling, it is truncated at mean +/- 4*sigma
 func Normal(mu, sigma float64) NormalDist {
 	return NormalDist{distuv.Normal{Mu: mu, Sigma: sigma}}
 }
@@ -24,6 +26,7 @@ func (n NormalDist) String() string {
 	return fmt.Sprintf("Normal(%f,%f)", n.Mu, n.Sigma)
 }
 
+// Beta is a beta distribution for use with any bandit strategy.
 func Beta(alpha, beta float64) BetaDist {
 	return BetaDist{distuv.Beta{Alpha: alpha, Beta: beta}}
 }
@@ -40,40 +43,50 @@ func (b BetaDist) String() string {
 	return fmt.Sprintf("Beta(%f,%f)", b.Beta.Alpha, b.Beta.Beta)
 }
 
-func Point(x float64) PointDist {
-	return PointDist{x}
+// Point is used for reward models that just provide point estimates. Don't use with Thompson sampling.
+func Point(mu float64) PointDist {
+	return PointDist{mu}
 }
 
 type PointDist struct {
-	X float64
+	Mu float64
 }
 
 func (p PointDist) Mean() float64 {
-	return p.X
+	return p.Mu
 }
 
 func (p PointDist) CDF(x float64) float64 {
-	if x >= p.X {
+	if x >= p.Mu {
 		return 1
 	}
 	return 0
 }
 
 func (p PointDist) Prob(x float64) float64 {
-	if x == p.X {
+	if x == p.Mu {
 		return math.NaN()
 	}
 	return 0
 }
 
 func (p PointDist) Rand() float64 {
-	return p.X
+	return p.Mu
 }
 
 func (p PointDist) Support() (float64, float64) {
-	return p.X, p.X
+	return p.Mu, p.Mu
 }
 
 func (p PointDist) String() string {
-	return fmt.Sprintf("Point(%f)", p.X)
+	if math.IsInf(p.Mu, -1) {
+		return "Null()"
+	}
+	return fmt.Sprintf("Point(%f)", p.Mu)
+}
+
+// Null returns a PointDist with mean equal to negative infinity. This is a special value that indicates
+// to a Strategy that this arm should get selection probability zero.
+func Null() PointDist {
+	return PointDist{math.Inf(-1)}
 }

@@ -24,7 +24,7 @@ func ExampleBandit_SelectArm() {
 		Sampler:      NewSha1Sampler(),
 	}
 
-	result, err := b.SelectArm(context.Background(), "12345")
+	result, err := b.SelectArm(context.Background(), "12345", nil)
 	if err != nil {
 		panic(err)
 	}

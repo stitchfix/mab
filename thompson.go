@@ -17,6 +17,10 @@ type Integrator interface {
 }
 
 func (t *Thompson) ComputeProbs(rewards []Dist) ([]float64, error) {
+	if len(rewards) == 0 {
+		return []float64{}, nil
+	}
+
 	t.rewards = rewards
 	return t.computeProbs()
 }
