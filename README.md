@@ -1,10 +1,20 @@
-[![Go workflow badge](https://github.com/stitchfix/mab/actions/workflows/go.yml/badge.svg)](https://github.com/stitchfix/mab/actions/workflows/go.yml)
-[![Go report card badge](https://goreportcard.com/badge/github.com/stitchfix/mab)](https://goreportcard.com/report/github.com/stitchfix/mab)
-[![Go Reference](https://pkg.go.dev/badge/github.com/stitchfix/mab.svg)](https://pkg.go.dev/github.com/stitchfix/mab)
-
-# mab: Multi-Armed Bandits Go Library
+# mab
+Multi-Armed Bandits Go Library
 
 <p align="center"><img src="https://user-images.githubusercontent.com/5180129/108548622-f2df8200-72a0-11eb-8cc2-b4f1e839dffd.png" width="720"></p>
+<p align="center">
+	<a href="https://github.com/stitchfix/mab/actions/workflows/go.yml"><img src="https://github.com/stitchfix/mab/actions/workflows/go.yml/badge.svg" alt="Build Status"></img></a>
+	<a href="https://goreportcard.com/report/github.com/stitchfix/mab"><img src="https://goreportcard.com/badge/github.com/stitchfix/mab" alt="Go Report Card"></img></a>
+	<a href="https://pkg.go.dev/github.com/stitchfix/mab"><img src="https://pkg.go.dev/badge/github.com/stitchfix/mab.svg" alt="Go Reference"></img></a>
+</p>
+
+* [Description](#description)
+* [Installation](#installation)
+* [Usage](#usage)
+  + [Creating a bandit and selecting arms](#bandit)
+  + [Numerical integration with `numint`](#numint)
+* [Documentation](#documentation)
+* [License](#license)
 
 ## Description
 
@@ -180,7 +190,7 @@ use the `Proportional` strategy to make sure that the sampler uses the normalize
 A Mab `Sampler` selects an arm given the set of selection probabilities and a string. The default sampler implementation
 uses the SHA1 hash of the input string (mod 1000) to determine the arm.
 
-### Numerical Integration with numint
+### Numint
 
 The Thompson sampling strategy depends on an integrator for computing probabilities.
 
@@ -198,6 +208,10 @@ trial-and-error to provide a good tradeoff between speed and reliability for a w
 combinations of normal and beta distributions.
 
 See the `numint` README and documentation for more details.
+
+## Documentation
+
+More detailed refence docs can be found on [pkg.go.dev](https://pkg.go.dev/github.com/stitchfix/mab)
 
 ## License
 
