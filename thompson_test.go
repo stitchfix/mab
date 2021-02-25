@@ -9,7 +9,7 @@ import (
 )
 
 func ExampleThompson_ComputeProbs() {
-	t := NewThompson(numint.NewQuadrature())
+	strat := NewThompson(numint.NewQuadrature())
 	rewards := []Dist{
 		Beta(1989, 21290),
 		Beta(40, 474),
@@ -18,7 +18,7 @@ func ExampleThompson_ComputeProbs() {
 		Beta(52, 659),
 		Beta(59, 718),
 	}
-	probs, err := t.ComputeProbs(rewards)
+	probs, err := strat.ComputeProbs(rewards)
 	if err != nil {
 		panic(err)
 	}
@@ -220,10 +220,10 @@ func BenchmarkThompson_ComputeProbs(b *testing.B) {
 	startTol := 0.1
 	endTol := 0.001
 	for tol := startTol; tol >= endTol; tol /= 10 {
-		bandit := NewThompson(numint.NewQuadrature(numint.WithAbsAndRelTol(tol, tol)))
+		strat := NewThompson(numint.NewQuadrature(numint.WithAbsAndRelTol(tol, tol)))
 		b.Run(fmt.Sprintf("tolerance_%v", tol), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_, err := bandit.ComputeProbs(rewards)
+				_, err := strat.ComputeProbs(rewards)
 				if err != nil {
 					b.Error(err)
 				}
