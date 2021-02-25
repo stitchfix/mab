@@ -1,6 +1,8 @@
 package mab
 
 import (
+	"bytes"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stitchfix/mab"
@@ -47,7 +49,7 @@ func TestBetaFromJSON(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := mab.BetaFromJSON(test.data)
+			actual, err := mab.BetaFromJSON(ioutil.NopCloser(bytes.NewReader(test.data)))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -94,7 +96,7 @@ func TestBetaFromJSONError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := mab.BetaFromJSON(test.data)
+			_, err := mab.BetaFromJSON(ioutil.NopCloser(bytes.NewReader(test.data)))
 			if err == nil {
 				t.Error("expected error but didn't get one")
 			}
@@ -147,7 +149,7 @@ func TestNormalFromJSON(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := mab.NormalFromJSON(test.data)
+			actual, err := mab.NormalFromJSON(ioutil.NopCloser(bytes.NewReader(test.data)))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -190,7 +192,7 @@ func TestNormalFromJSONError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := mab.NormalFromJSON(test.data)
+			_, err := mab.NormalFromJSON(ioutil.NopCloser(bytes.NewReader(test.data)))
 			if err == nil {
 				t.Error("expected error but didn't get one")
 			}
@@ -243,7 +245,7 @@ func TestPointFromJSON(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := mab.PointFromJSON(test.data)
+			actual, err := mab.PointFromJSON(ioutil.NopCloser(bytes.NewReader(test.data)))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -278,7 +280,7 @@ func TestPointFromJSONError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := mab.PointFromJSON(test.data)
+			_, err := mab.PointFromJSON(ioutil.NopCloser(bytes.NewReader(test.data)))
 			if err == nil {
 				t.Error("expected error but didn't get one")
 			}
