@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/stitchfix/mab"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -43,7 +44,7 @@ func TestSha1Sampler_Sample(t *testing.T) {
 		numIter := 10_000
 
 		t.Run(test.name, func(t *testing.T) {
-			s := NewSha1Sampler()
+			s := mab.NewSha1Sampler()
 			for i := 0; i < numIter; i++ {
 				sample, err := s.Sample(test.weights, strconv.Itoa(i))
 				if err != nil {

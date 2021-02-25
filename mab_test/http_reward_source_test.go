@@ -3,6 +3,7 @@ package mab
 import (
 	"testing"
 
+	"github.com/stitchfix/mab"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -10,43 +11,43 @@ func TestBetaFromJSON(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     []byte
-		expected []Dist
+		expected []mab.Dist
 	}{
 		{
 			"no arms",
 			[]byte(`[]`),
-			[]Dist{},
+			[]mab.Dist{},
 		},
 		{
 			"one arm",
 			[]byte(`[{"alpha": 10, "beta": 20}]`),
-			[]Dist{Beta(10, 20)},
+			[]mab.Dist{mab.Beta(10, 20)},
 		},
 		{
 			"lowercase",
 			[]byte(`[{"alpha": 10, "beta": 20}, {"alpha": 20, "beta": 10}]`),
-			[]Dist{Beta(10, 20), Beta(20, 10)},
+			[]mab.Dist{mab.Beta(10, 20), mab.Beta(20, 10)},
 		},
 		{
 			"mixed cases",
 			[]byte(`[{"alpha": 10, "Beta": 20}, {"Alpha": 20, "beta": 10}]`),
-			[]Dist{Beta(10, 20), Beta(20, 10)},
+			[]mab.Dist{mab.Beta(10, 20), mab.Beta(20, 10)},
 		},
 		{
 			"floats",
 			[]byte(`[{"alpha": 10.0, "beta": 20.12345}, {"alpha": 1.945, "beta": 10}]`),
-			[]Dist{Beta(10.0, 20.12345), Beta(1.945, 10)},
+			[]mab.Dist{mab.Beta(10.0, 20.12345), mab.Beta(1.945, 10)},
 		},
 		{
 			"four arms",
 			[]byte(`[{"alpha": 10.0, "beta": 20.12345}, {"alpha": 1.945, "beta": 10}, {"alpha": 100.0, "beta": 201.2345}, {"alpha": 999.9, "beta": 3.141}]`),
-			[]Dist{Beta(10.0, 20.12345), Beta(1.945, 10), Beta(100.0, 201.2345), Beta(999.9, 3.141)},
+			[]mab.Dist{mab.Beta(10.0, 20.12345), mab.Beta(1.945, 10), mab.Beta(100.0, 201.2345), mab.Beta(999.9, 3.141)},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := BetaFromJSON(test.data)
+			actual, err := mab.BetaFromJSON(test.data)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -93,7 +94,7 @@ func TestBetaFromJSONError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := BetaFromJSON(test.data)
+			_, err := mab.BetaFromJSON(test.data)
 			if err == nil {
 				t.Error("expected error but didn't get one")
 			}
@@ -105,48 +106,48 @@ func TestNormalFromJSON(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     []byte
-		expected []Dist
+		expected []mab.Dist
 	}{
 		{
 			"no arms",
 			[]byte(`[]`),
-			[]Dist{},
+			[]mab.Dist{},
 		},
 		{
 			"one arm",
 			[]byte(`[{"mu": 10, "sigma": 20}]`),
-			[]Dist{Normal(10, 20)},
+			[]mab.Dist{mab.Normal(10, 20)},
 		},
 		{
 			"lowercase",
 			[]byte(`[{"mu": 10, "sigma": 20}, {"mu": 20, "sigma": 10}]`),
-			[]Dist{Normal(10, 20), Normal(20, 10)},
+			[]mab.Dist{mab.Normal(10, 20), mab.Normal(20, 10)},
 		},
 		{
 			"mixed cases",
 			[]byte(`[{"mu": 10, "Sigma": 20}, {"Mu": 20, "sigma": 10}]`),
-			[]Dist{Normal(10, 20), Normal(20, 10)},
+			[]mab.Dist{mab.Normal(10, 20), mab.Normal(20, 10)},
 		},
 		{
 			"floats",
 			[]byte(`[{"mu": 10.0, "sigma": 20.12345}, {"mu": 1.945, "sigma": 10}]`),
-			[]Dist{Normal(10.0, 20.12345), Normal(1.945, 10)},
+			[]mab.Dist{mab.Normal(10.0, 20.12345), mab.Normal(1.945, 10)},
 		},
 		{
 			"negative mu",
 			[]byte(`[{"mu": -10.0, "sigma": 20.12345}, {"mu": -1.945, "sigma": 10}]`),
-			[]Dist{Normal(-10.0, 20.12345), Normal(-1.945, 10)},
+			[]mab.Dist{mab.Normal(-10.0, 20.12345), mab.Normal(-1.945, 10)},
 		},
 		{
 			"four arms",
 			[]byte(`[{"mu": 10.0, "sigma": 20.12345}, {"mu": 1.945, "sigma": 10}, {"mu": 100.0, "sigma": 201.2345}, {"mu": 999.9, "sigma": 3.141}]`),
-			[]Dist{Normal(10.0, 20.12345), Normal(1.945, 10), Normal(100.0, 201.2345), Normal(999.9, 3.141)},
+			[]mab.Dist{mab.Normal(10.0, 20.12345), mab.Normal(1.945, 10), mab.Normal(100.0, 201.2345), mab.Normal(999.9, 3.141)},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := NormalFromJSON(test.data)
+			actual, err := mab.NormalFromJSON(test.data)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -189,7 +190,7 @@ func TestNormalFromJSONError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := NormalFromJSON(test.data)
+			_, err := mab.NormalFromJSON(test.data)
 			if err == nil {
 				t.Error("expected error but didn't get one")
 			}
@@ -201,48 +202,48 @@ func TestPointFromJSON(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     []byte
-		expected []Dist
+		expected []mab.Dist
 	}{
 		{
 			"no arms",
 			[]byte(`[]`),
-			[]Dist{},
+			[]mab.Dist{},
 		},
 		{
 			"one arm",
 			[]byte(`[{"mu": 10}]`),
-			[]Dist{Point(10)},
+			[]mab.Dist{mab.Point(10)},
 		},
 		{
 			"lowercase",
 			[]byte(`[{"mu": 10}, {"mu": 20}]`),
-			[]Dist{Point(10), Point(20)},
+			[]mab.Dist{mab.Point(10), mab.Point(20)},
 		},
 		{
 			"mixed cases",
 			[]byte(`[{"mu": 10}, {"Mu": 20}]`),
-			[]Dist{Point(10), Point(20)},
+			[]mab.Dist{mab.Point(10), mab.Point(20)},
 		},
 		{
 			"floats",
 			[]byte(`[{"mu": 10.0}, {"mu": 1.945}]`),
-			[]Dist{Point(10.0), Point(1.945)},
+			[]mab.Dist{mab.Point(10.0), mab.Point(1.945)},
 		},
 		{
 			"negative mu",
 			[]byte(`[{"mu": -10.0}, {"mu": -1.945, "sigma": 10}]`),
-			[]Dist{Point(-10.0), Point(-1.945)},
+			[]mab.Dist{mab.Point(-10.0), mab.Point(-1.945)},
 		},
 		{
 			"four arms",
 			[]byte(`[{"mu": 10.0}, {"mu": 1.945}, {"mu": 100.0}, {"mu": -999.9}]`),
-			[]Dist{Point(10.0), Point(1.945), Point(100.0), Point(-999.9)},
+			[]mab.Dist{mab.Point(10.0), mab.Point(1.945), mab.Point(100.0), mab.Point(-999.9)},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := PointFromJSON(test.data)
+			actual, err := mab.PointFromJSON(test.data)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -277,7 +278,7 @@ func TestPointFromJSONError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := PointFromJSON(test.data)
+			_, err := mab.PointFromJSON(test.data)
 			if err == nil {
 				t.Error("expected error but didn't get one")
 			}
