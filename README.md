@@ -1,5 +1,6 @@
 ![Go workflow badge](https://github.com/stitchfix/mab/actions/workflows/go.yml/badge.svg)
 ![Go report card badge](https://goreportcard.com/badge/github.com/stitchfix/mab)
+[![Go Reference](https://pkg.go.dev/badge/github.com/stitchfix/mab.svg)](https://pkg.go.dev/github.com/stitchfix/mab)
 
 # mab: Multi-Armed Bandits Go Library
 
