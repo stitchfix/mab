@@ -11,11 +11,18 @@ func NewEpsilonGreedy(e float64) *EpsilonGreedy {
 	}
 }
 
+// EpsilonGreedy computes arm-selection probabilities for an epsilon-greedy bandit.
+// The Epsilon parameter must be greater than zero.
+// If any arm has a Null distribution, it will have zero selection probability, and the other
+// arms' probabilities will be computed as if the Null arms are not present.
+// Ties are accounted for, so if multiple arms have the maximum mean reward estimate, they will have equal probabilities.
 type EpsilonGreedy struct {
 	Epsilon     float64
 	meanRewards []float64
 }
 
+// ComputeProbs computes the arm selection probabilities from the set of reward estimates, accounting for Nulls and ties.
+// Returns an error if epsilon is less than zero.
 func (e *EpsilonGreedy) ComputeProbs(rewards []Dist) ([]float64, error) {
 
 	if err := e.validateEpsilon(); err != nil {

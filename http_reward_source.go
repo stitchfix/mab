@@ -30,6 +30,7 @@ func WithContextMarshaler(m ContextMarshaler) HTTPSourceOption {
 	}
 }
 
+// HTTPSource is a basic implementation of RewardSource that gets reward estimates from an HTTP reward service.
 type HTTPSource struct {
 	client    HttpDoer
 	url       string

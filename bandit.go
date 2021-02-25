@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-// Bandit gets reward values from a RewardSource, computes selection probabilities using a Strategy, and selects
+// A Bandit gets reward values from a RewardSource, computes selection probabilities using a Strategy, and selects
 // an arm using a Sampler.
 type Bandit struct {
 	RewardSource
@@ -63,7 +63,10 @@ type Result struct {
 	Arm     int
 }
 
-// Dist represents a one-dimensional probability distribution.
+// A Dist represents a one-dimensional probability distribution.
+// Reward estimates are represented as a Dist for each arm.
+// Strategies compute arm-selection probabilities using the Dist interface.
+// This allows for combining different distributions with different strategies.
 type Dist interface {
 	// CDF returns the cumulative distribution function evaluated at x.
 	CDF(x float64) float64
@@ -81,7 +84,7 @@ type Dist interface {
 	Support() (float64, float64)
 }
 
-// RewardSource provides the current reward estimates, in the form of a Dist for each arm.
+// A RewardSource provides the current reward estimates, in the form of a Dist for each arm.
 // There is an unfortunate name collision between a multi-armed bandit context and Go's Context type.
 // The first argument is a context.Context and should only be used for passing request-scoped data to an external reward service.
 // If the RewardSource does not require an external request, this first argument should always be context.Background()
@@ -92,14 +95,13 @@ type RewardSource interface {
 	GetRewards(ctx context.Context, banditContext interface{}) ([]Dist, error)
 }
 
-// Strategy computes arm selection probabilities from a slice of Distributions.
-// The output probabilities is the same length as the input Dist slice and in the same order.
+// A Strategy computes arm selection probabilities from a slice of Distributions.
 type Strategy interface {
 	ComputeProbs([]Dist) ([]float64, error)
 }
 
-// Sampler returns a pseudo-random arm index given a set of probabilities and a unit.
-// Samplers should always return the same arm index for the same set of probabilities and unit.
+// A Sampler returns a pseudo-random arm index given a set of probabilities and a string to hash.
+// Samplers should always return the same arm index for the same set of probabilities and unit value.
 type Sampler interface {
 	Sample(probs []float64, unit string) (int, error)
 }
