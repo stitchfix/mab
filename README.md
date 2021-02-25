@@ -49,57 +49,66 @@ import (
 )
 
 func main() {
-	rewards := []mab.Dist{
-		mab.Beta(1989, 21290),
-		mab.Beta(40, 474),
-		mab.Beta(64, 730),
-		mab.Beta(71, 818),
-		mab.Beta(52, 659),
-		mab.Beta(59, 718),
+
+	rewards := map[string][]mab.Dist{
+		"us": {
+			mab.Beta(40, 474),
+			mab.Beta(64, 730),
+			mab.Beta(71, 818),
+		},
+		"uk": {
+			mab.Beta(25, 254),
+			mab.Beta(100, 430),
+			mab.Beta(30, 503),
+		},
 	}
 
 	bandit := mab.Bandit{
-		RewardSource: &mab.RewardStub{Rewards: rewards},
+		RewardSource: &mab.ContextualRewardStub{rewards},
 		Strategy:     mab.NewThompson(numint.NewQuadrature()),
 		Sampler:      mab.NewSha1Sampler(),
 	}
 
-	result, err := bandit.SelectArm(context.Background(), "user_id:12345")
+	result, err := bandit.SelectArm(context.Background(), "user_id:12345", "us")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(result.Arm)
+	fmt.Println(result)
 }
 ```
 
 `SelectArm` will get the reward estimates from the `RewardSource`, compute arm-selection probabilities using
 the `Strategy` and select an arm using the `Sampler`.
 
-The input to `SelectArm` is a `Context`, which can be used to supply request-scoped data to the `RewardSource`
-for the purposes of cancellation propagation and/or passing contextual bandit features.
+There is an unfortunate name collision between Go's `context.Context` type and the context a contextual bandit.
+In Mab, the `context.Context` variables will always be named `ctx`, while the variables used for bandit context will be called `banditContext`.
+
+Go's `context.Context` should be used to pass request-scoped data to the RewardSource, and it is best practice to only use it for cancellation propagation or passing non-controlling data such as request IDs.
+
+The values needed by the contextual bandit to determine the reward estimates should be passed using the last argument, which is named `banditContext`.
 
 The `unit` input to `SelectArm` is a string that is used for enabling deterministic outcomes. This is useful for
-debugging and testing, but can also be used in the context of an experimentation platform to ensure that users get a
-consistent experience in between updates to the bandit reward model. Bandits are expected to always provide the same arm
-selection for the same set of reward estimates and unit.
+debugging and testing, but can also be used to ensure that users get a consistent experience in between updates to the bandit reward model.
+Bandits are expected to always provide the same arm selection for the same set of reward estimates and input unit string.
 
 The output of `SelectArm` is a struct containing the reward estimates, computed probabilities, and selected arm.
 
 #### RewardSource
 
-A `RewardSource` is expected to provide up-to-date reward estimates for each arm. Users must provide their
-own `RewardSource` implementation. Mab only provides a stub implementation for testing and documentation purposes.
+A `RewardSource` is expected to provide up-to-date reward estimates for each arm, given some context data.
+Mab provides a basic implementation (`HTTPSource`) that can be used for requesting rewards from an HTTP service, and some stubs that can be used for testing and development.
 
 ```go
 type RewardSource interface {
-    GetRewards(context.Context) ([]Dist, error)
+    GetRewards(context.Context, interface{}) ([]Dist, error)
 }
 ```
 
-A user-defined `RewardSource` is expected to get reward estimates from a database, a cache, or a via HTTP request to a
+A typical `RewardSource` implementation is expected to get reward estimates from a database, a cache, or a via HTTP request to a
 dedicated reward service. Since a `RewardSource` is likely to require a call to some external service, the `GetRewards`
-method includes a `Context` argument. This enables Mab bandits to be used in web services that need to pass
-request-scoped context such as request cancellation deadlines.
+method includes a `context.Context`-type argument. This enables Mab bandits to be used in web services that need to pass
+request-scoped data such as request timeouts and cancellation propagation. The second argument should be used to pass bandit context data to the reward source.
+The reward source must return one distribution per arm, conditional on the bandit context.
 
 ##### Distributions
 
@@ -119,16 +128,14 @@ Mab includes implementations of beta, normal, and point distributions. The beta 
 extend [gonum](https://github.com/gonum/gonum/tree/master/stat/distuv) implementations, so they are performant and
 reliable.
 
-Mab lets your combine any distribution with any strategy, although some combinations don't make sense in practice. For
-example, you could use normal distributions with the epsilon greedy strategy, but the width parameters will just be
-ignored. So it might make sense to just use a point distributions for epsilon greedy bandits. Additionally, Mab will let
-you use point distributions with a Thompson sampling strategy, but the resulting bandit won't be very useful, since
-Thompson sampling relies on distributions having non-zero width.
+Mab lets your combine any distribution with any strategy, although some combinations don't make sense in practice. 
 
-##### Contextual bandits
+For epsilon greedy, you will most likely use `Point` distributions, since the algorithm only cares about the mean of the reward estimate.
+Other distributions can be used, as long as they implement a `Mean()` that returns well-defined values.
 
-For contextual bandits, the `Context` argument can also be used to pass context features to the `RewardSource`.
-The `RewardSource` is expected to return the reward estimates conditioned on the context features.
+For Thompson sampling, it is recommended to use `Normal` or `Beta` distributions. Since Thompson sampling is based on sampling from finite-width distributions, you won't get a useful bandit by using `Point` distributions with the `Thompson` strategy.
+
+The `Null()` function returns a `Point` distribution at negative infinity (`math.Inf(-1)`). This indicates to the `Strategy` that this arm should never be selected. Each `Strategy` must account for any number of Null distributions and return zero probability for the null arms and the correct set of probabilities for the non-null arms, as if the null arms were not present.
 
 #### Strategy
 
@@ -136,9 +143,11 @@ A Mab `Strategy` computes arm-selection probabilities from the set of reward est
 
 Mab provides the following strategies:
 
-- Thompson sampling
-- Epsilon-greedy
-- Proportional
+- Thompson sampling (`mab.Thompson`)
+- Epsilon-greedy (`mab.EpsilonGreedy`)
+- Proportional (`mab.Proportional`)
+
+Mab also provides a Monte-Carlo based Thompson-sampling strategy (`mab.ThompsonMC`) but it is much slower an less accurate than `mab.Thompson`, which is based on numerical integration. It is not recommended to use `ThompsonMC` in production.
 
 ##### Thompson sampling
 
@@ -151,23 +160,24 @@ PDF times the posterior CDFs of all other arms. The derivation of this formula i
 
 Computing these probabilities requires one-dimensional integration, which is provided by the `numint` subpackage.
 
+The limits of integration are determined by the `Support` of the arms' distribution, so `Point` distributions will always get zero probability using Thompson sampling.
+
 ##### Epsilon-greedy
 
 This is the basic epsilon-greedy selection strategy. The probability of selecting an arm under epsilon greedy is readily
-computed from a closed-form solution without the need for numerical integration.
+computed from a closed-form solution without the need for numerical integration. It is based on the `Mean` of the reward estimate.
 
 ##### Proportional
 
 The proportional sampler computes arm selection probabilities proportional to some input weights. This is not a real
 bandit strategy, but exists to allow users to effectively shift the interface between reward sources and bandit
-strategies. You can have you `RewardSource` return the desired selection probabilities as `Point` distributions and then
-use the `Proportional` strategy to make sure that the sampler uses the provided probabilities directly without an
-intermediate probability-computation step.
+strategies. You can create a `RewardSource` that returns the desired selection weights as `Point` distributions and then
+use the `Proportional` strategy to make sure that the sampler uses the normalized weights as the probability distribution for arm selection.
 
 #### Sampler
 
 A Mab `Sampler` selects an arm given the set of selection probabilities and a string. The default sampler implementation
-uses the SHA1 hash of the input string to determine the arm.
+uses the SHA1 hash of the input string (mod 1000) to determine the arm.
 
 ### Numerical Integration with numint
 
