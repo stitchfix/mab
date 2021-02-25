@@ -11,7 +11,7 @@ func NewEpsilonGreedy(e float64) *EpsilonGreedy {
 	}
 }
 
-// EpsilonGreedy computes arm-selection probabilities for an epsilon-greedy bandit.
+// EpsilonGreedy implements the epsilon-greedy bandit strategy.
 // The Epsilon parameter must be greater than zero.
 // If any arm has a Null distribution, it will have zero selection probability, and the other
 // arms' probabilities will be computed as if the Null arms are not present.
