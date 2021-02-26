@@ -1,7 +1,7 @@
+// Package numint provides rules and methods for one-dimensional numerical quadrature
 package numint
 
 import (
-	"errors"
 	"fmt"
 	"math"
 )
@@ -18,6 +18,12 @@ var defaultRule = GaussLegendre(defaultDegree)
 var defaultSubdivider = EquallySpaced(defaultSubIntervals)
 var defaultTolerance = tolerance{defaultRelTol, defaultAbsTol}
 
+// NewQuadrature returns a pointer to new Quadrature with any Option arguments applied.
+// For example:
+// 	q := NewQuadrature()
+// Returns a Quadrature with all default settings.
+// The default settings can be overridden with Option functions:
+//	q := NewQuadrature(WithRule(GaussLegendre(4), WithMaxIter(10), WithRelTol(0.01))
 func NewQuadrature(opts ...Option) *Quadrature {
 	quad := Quadrature{
 		rule:       defaultRule,
@@ -31,22 +37,27 @@ func NewQuadrature(opts ...Option) *Quadrature {
 	return &quad
 }
 
+// Rule is an interface that provides Weights and sampling Points to be used during numerical quadrature.
 type Rule interface {
 	Weights(a float64, b float64) []float64
 	Points(a float64, b float64) []float64
 }
 
+// SubDivider determines how to sub-divide intervals for each iteration of numerical quadrature
 type SubDivider interface {
 	SubDivide([]Interval) []Interval
 }
 
-type Integrand func(float64) float64
+type integrand func(float64) float64
 
+// Interval represents a finite interval between A and B, where B > A.
 type Interval struct {
 	A float64
 	B float64
 }
 
+// Quadrature contains the rule, subdivider, tolerance, and max iterations for numerical quadrature.
+// These fields can all be specified using NewQuadrature with the corresponding option functions.
 type Quadrature struct {
 	rule       Rule
 	tol        tolerance
@@ -54,17 +65,29 @@ type Quadrature struct {
 	maxIter    int
 }
 
+// Integrate computes an estimate of the integral of f from a to b.
+// It works by first getting the Points and Weights from the Rule for the interval [a, b]
+// then computing the sum of w_i * f(x_i) where w_i are the weights and p_i are the points.
+// The next step is to subdivide the original interval [a, b] using the SubDivider,
+// then compute the same estimate summed over the sub-intervals.
+// This process is repeated until the absolute difference between successive iterations is less than the specified tolerance,
+// or until maxIter is reached.
+// If absolute tolerance is set using WithAbsTol, only absolute tolerance is checked.
+// If relative tolerance is set using WithRelTol, only relative tolerance is checked.
+// If both absolute and relative tolerances are set using WithAbsAndRelTol, then the absolute difference must be less than *both* tolerances for the algorithm to converge.
+// If the max iteration threshold is reached without reaching the specified tolerance, Integrate returns the final result and an error.
+// The max iteration threshold can be specified using WithMaxIter as an argument to NewQuadrature.
 func (q Quadrature) Integrate(f func(float64) float64, a float64, b float64) (float64, error) {
 	if a == b {
 		return 0, nil
 	}
 	if !q.canConverge() {
-		return math.NaN(), errors.New("integral cannot converge. check tolerance")
+		return math.NaN(), fmt.Errorf("integral cannot converge. check tolerance")
 	}
 	return q.iterativeComposite(f, Interval{a, b})
 }
 
-func (q Quadrature) iterativeComposite(f Integrand, interval Interval) (float64, error) {
+func (q Quadrature) iterativeComposite(f integrand, interval Interval) (float64, error) {
 
 	intervals := []Interval{interval}
 
@@ -78,13 +101,13 @@ func (q Quadrature) iterativeComposite(f Integrand, interval Interval) (float64,
 		prevResult := result
 		result, err = q.compositeEstimate(f, intervals)
 		if err != nil {
-			return math.NaN(), fmt.Errorf(err.Error())
+			return result, err
 		}
 		if q.hasConverged(result, prevResult) {
 			return result, nil
 		}
 	}
-	return math.NaN(), errors.New("failed to converge")
+	return result, fmt.Errorf("failed to converge")
 }
 
 func (q Quadrature) canConverge() bool {
@@ -98,7 +121,7 @@ func (q Quadrature) hasConverged(result, prevResult float64) bool {
 	return relErr <= q.tol.relative && absErr <= q.tol.absolute
 }
 
-func (q Quadrature) compositeEstimate(f Integrand, intervals []Interval) (float64, error) {
+func (q Quadrature) compositeEstimate(f integrand, intervals []Interval) (float64, error) {
 	total := 0.0
 	for i := range intervals {
 		result, err := q.singleEstimate(f, intervals[i])
@@ -110,7 +133,7 @@ func (q Quadrature) compositeEstimate(f Integrand, intervals []Interval) (float6
 	return total, nil
 }
 
-func (q Quadrature) singleEstimate(f Integrand, interval Interval) (float64, error) {
+func (q Quadrature) singleEstimate(f integrand, interval Interval) (float64, error) {
 
 	x := q.rule.Points(interval.A, interval.B)
 	w := q.rule.Weights(interval.A, interval.B)
