@@ -1,5 +1,8 @@
 package numint
 
+// NewtonCotesOpen returns an open NewtonCotesRule of the specified degree.
+// Open Newton-Cotes rules do not include the endpoints of the interval in the sampling points.
+// NewtonCotesOpen is implemented for rules up to degree 7.
 func NewtonCotesOpen(degree int) NewtonCotesRule {
 	var coeffs []float64
 	switch degree {
@@ -20,6 +23,9 @@ func NewtonCotesOpen(degree int) NewtonCotesRule {
 	return NewtonCotesRule{coeffs: coeffs, open: true}
 }
 
+// NewtonCotesClosed returns a closed NewtonCotesRule of the specified degree.
+// Closed Newton-Cotes rules include the endpoints of the interval in the sampling points.
+// NewtonCotesClosed is implemented for rules up to degree 5.
 func NewtonCotesClosed(degree int) NewtonCotesRule {
 	var coeffs []float64
 	switch degree {
@@ -38,11 +44,14 @@ func NewtonCotesClosed(degree int) NewtonCotesRule {
 	return NewtonCotesRule{coeffs: coeffs, open: false}
 }
 
+// NewtonCotesRule provides Weights and Points functions for Newton-Codes quadrature rules.
 type NewtonCotesRule struct {
 	coeffs []float64
 	open   bool
 }
 
+// Weights returns the quadrature weights to use for the interval [a, b].
+// The number of points returned depends on the degree and openness of the rule.
 func (n *NewtonCotesRule) Weights(a float64, b float64) []float64 {
 	weights := make([]float64, len(n.coeffs))
 	for i := range n.coeffs {
@@ -51,6 +60,8 @@ func (n *NewtonCotesRule) Weights(a float64, b float64) []float64 {
 	return weights
 }
 
+// Points returns the quadrature sampling points to use for the interval [a, b].
+// The number of points returned depends on the degree and openness of the rule.
 func (n *NewtonCotesRule) Points(a float64, b float64) []float64 {
 	if n.degree() <= 0 {
 		return []float64{}

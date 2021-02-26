@@ -50,7 +50,7 @@ func WithRule(rule Rule) Option {
 	}
 }
 
-// WithSubDivider sets the subdivider that should be used to compute the set of sub-intervals
+// WithSubDivider sets the subdivider that should be used to compute the set of sub-intervals for each iteration.
 func WithSubDivider(s SubDivider) Option {
 	return func(q *Quadrature) {
 		q.subDivider = s
