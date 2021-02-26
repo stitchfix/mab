@@ -43,7 +43,13 @@ type Rule interface {
 	Points(a float64, b float64) []float64
 }
 
-// SubDivider determines how to sub-divide intervals for each iteration of numerical quadrature
+// SubDivider determines how to sub-divide intervals for each iteration of numerical quadrature.
+// It takes a slice of intervals and returns the a flat slice containing all the sub-divided intervals.
+// For example, using the EquallySpaced subdivider to divide the intervals [0, 1], [1, 2] into two equally-spaced intervals each:
+// 	sub := EquallySpaced(2)
+// 	result := sub.SubDivide([]Interval{{0, 1}, {1, 2}})
+// Results in the sub-intervals:
+// 	[]Interval{{0, 0.5}, {0.5, 1}, {1, 1.5}, {1.5, 2}}
 type SubDivider interface {
 	SubDivide([]Interval) []Interval
 }
