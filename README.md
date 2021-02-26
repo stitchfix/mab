@@ -43,8 +43,9 @@ go get -u github.com/stitchfix/mab
 
 ### Bandit
 
-A `Bandit` consists of three components: a `RewardSource`, a `Strategy` and a `Sampler`. Users can provide their own
-implementations of each component, or use the Mab implementations.
+A `Bandit` consists of three components: a `RewardSource`, a `Strategy` and a `Sampler`.
+Mab provides implementations of each of these, but you are encouraged to implement your own as well!
+Each component is defined by single-method interface, making it relatively simple to fully customize a Mab bandit.
 
 Example:
 

@@ -1,5 +1,7 @@
 package numint
 
+// GaussLegendre returns a GaussLegendre rule of specified degree.
+// The rules are based off of hard-coded constants, and are implemented up to n=12.
 func GaussLegendre(degree int) *GaussLegendreRule {
 
 	if degree > len(weightValues) || degree < 1 {
@@ -27,11 +29,14 @@ func GaussLegendre(degree int) *GaussLegendreRule {
 	}
 }
 
+// GaussLegendreRule provides Weights and Points functions for Gauss Legendre quadrature rules.
 type GaussLegendreRule struct {
 	abscissae, weightCoeffs []float64
 	weights, points         []float64
 }
 
+// Weights returns the quadrature weights to use for the interval [a, b].
+// The number of points returned depends on the degree of the rule.
 func (g *GaussLegendreRule) Weights(a float64, b float64) []float64 {
 
 	for i := range g.weightCoeffs {
@@ -41,6 +46,8 @@ func (g *GaussLegendreRule) Weights(a float64, b float64) []float64 {
 	return g.weights
 }
 
+// Points returns the quadrature sampling points to use for the interval [a, b].
+// The number of points returned depends on the degree of the rule.
 func (g GaussLegendreRule) Points(a float64, b float64) []float64 {
 
 	for i := range g.abscissae {

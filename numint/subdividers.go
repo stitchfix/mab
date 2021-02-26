@@ -1,5 +1,6 @@
 package numint
 
+// EquallySpaced returns an SubDivider that divides intervals into a set number of equally-spaced sub-intervals.
 func EquallySpaced(nSubIntervals int) SubDivider {
 	return equallySpaced{
 		nSubIntervals: nSubIntervals,
@@ -10,6 +11,7 @@ type equallySpaced struct {
 	nSubIntervals int
 }
 
+// SubDivide divides each interval into an equal number of sub-intervals and returns the slice of sub-intervals as a flat slice.
 func (e equallySpaced) SubDivide(intervals []Interval) []Interval {
 	result := make([]Interval, 0)
 
