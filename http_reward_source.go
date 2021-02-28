@@ -64,6 +64,10 @@ func (h *HTTPSource) GetRewards(ctx context.Context, banditContext interface{}) 
 		return nil, err
 	}
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("Non-2XX response code from reward server: %s", http.StatusText(resp.StatusCode))
+	}
+
 	return h.parser.Parse(resp.Body)
 }
 
