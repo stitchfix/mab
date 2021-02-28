@@ -65,10 +65,26 @@ func (h *HTTPSource) GetRewards(ctx context.Context, banditContext interface{}) 
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return nil, fmt.Errorf("Non-2XX response code from reward server: %s", http.StatusText(resp.StatusCode))
+		defer resp.Body.Close()
+		errMsg, _ := ioutil.ReadAll(resp.Body)
+		return nil, &ErrRewardNon2XX{
+			Url:        h.url,
+			StatusCode: resp.StatusCode,
+			RespBody:   string(errMsg),
+		}
 	}
 
 	return h.parser.Parse(resp.Body)
+}
+
+type ErrRewardNon2XX struct {
+	Url        string
+	StatusCode int
+	RespBody   string
+}
+
+func (e *ErrRewardNon2XX) Error() string {
+	return fmt.Sprintf("reward service \"%s\": [%d] %s", e.Url, e.StatusCode, e.RespBody)
 }
 
 // HTTPDoer is a basic interface for making HTTP requests. The net/http Client can be used or you can bring your own.
