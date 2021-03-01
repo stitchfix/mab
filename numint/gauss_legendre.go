@@ -24,37 +24,38 @@ func GaussLegendre(degree int) *GaussLegendreRule {
 	return &GaussLegendreRule{
 		abscissae:    abscissae,
 		weightCoeffs: weightCoeffs,
-		weights:      make([]float64, len(weightCoeffs)),
-		points:       make([]float64, len(abscissae)),
 	}
 }
 
 // GaussLegendreRule provides Weights and Points functions for Gauss Legendre quadrature rules.
 type GaussLegendreRule struct {
 	abscissae, weightCoeffs []float64
-	weights, points         []float64
 }
 
 // Weights returns the quadrature weights to use for the interval [a, b].
 // The number of points returned depends on the degree of the rule.
 func (g *GaussLegendreRule) Weights(a float64, b float64) []float64 {
 
+	weights := make([]float64, len(g.weightCoeffs))
+
 	for i := range g.weightCoeffs {
-		g.weights[i] = g.weightCoeffs[i] * (b - a) / 2
+		weights[i] = g.weightCoeffs[i] * (b - a) / 2
 	}
 
-	return g.weights
+	return weights
 }
 
 // Points returns the quadrature sampling points to use for the interval [a, b].
 // The number of points returned depends on the degree of the rule.
 func (g GaussLegendreRule) Points(a float64, b float64) []float64 {
 
+	points := make([]float64, len(g.abscissae))
+
 	for i := range g.abscissae {
-		g.points[i] = g.abscissae[i]*(b-a)/2 + (b+a)/2
+		points[i] = g.abscissae[i]*(b-a)/2 + (b+a)/2
 	}
 
-	return g.points
+	return points
 }
 
 // source: http://www.holoborodko.com/pavel/numerical-methods/numerical-integration/
