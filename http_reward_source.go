@@ -63,18 +63,22 @@ func (h *HTTPSource) GetRewards(ctx context.Context, banditContext interface{}) 
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		defer resp.Body.Close()
-		errMsg, _ := ioutil.ReadAll(resp.Body)
 		return nil, &ErrRewardNon2XX{
 			Url:        h.url,
 			StatusCode: resp.StatusCode,
-			RespBody:   string(errMsg),
+			RespBody:   string(data),
 		}
 	}
 
-	return h.parser.Parse(resp.Body)
+	return h.parser.Parse(data)
 }
 
 type ErrRewardNon2XX struct {
@@ -95,7 +99,7 @@ type HttpDoer interface {
 
 // RewardParser will be called to convert the response from the reward service to a slice of distributions.
 type RewardParser interface {
-	Parse(io.ReadCloser) ([]Dist, error)
+	Parse([]byte) ([]Dist, error)
 }
 
 // ContextMarshaler is called on the banditContext and the result will become the body of the request to the bandit service.
@@ -114,9 +118,9 @@ func WithContextMarshaler(m ContextMarshaler) HTTPSourceOption {
 }
 
 // ParseFunc is an adapter to allow a normal function to be used as a RewardParser
-type ParseFunc func(io.ReadCloser) ([]Dist, error)
+type ParseFunc func([]byte) ([]Dist, error)
 
-func (p ParseFunc) Parse(rc io.ReadCloser) ([]Dist, error) { return p(rc) }
+func (p ParseFunc) Parse(b []byte) ([]Dist, error) { return p(b) }
 
 // MarshalFunc is an adapter to allow a normal function to be used as a ContextMarshaler
 type MarshalFunc func(banditContext interface{}) ([]byte, error)
@@ -128,14 +132,7 @@ func (m MarshalFunc) Marshal(banditContext interface{}) ([]byte, error) { return
 // 	`[{"alpha": 123, "beta": 456}, {"alpha": 3.1415, "beta": 9.999}]`
 // Returns an error if alpha or beta value are missing or less than 1 for any arm.
 // Any additional keys are ignored.
-func BetaFromJSON(rc io.ReadCloser) ([]Dist, error) {
-	defer rc.Close()
-
-	data, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read data: %w", err)
-	}
-
+func BetaFromJSON(data []byte) ([]Dist, error) {
 	var resp []struct {
 		Alpha *float64 `json:"alpha"`
 		Beta  *float64 `json:"beta"`
@@ -170,14 +167,7 @@ func BetaFromJSON(rc io.ReadCloser) ([]Dist, error) {
 // 	`[{"mu": 123, "sigma": 456}, {"mu": 3.1415, "sigma": 9.999}]`
 // Returns an error if mu or sigma value are missing or sigma is less than 0 for any arm.
 // Any additional keys are ignored.
-func NormalFromJSON(rc io.ReadCloser) ([]Dist, error) {
-	defer rc.Close()
-
-	data, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read data: %w", err)
-	}
-
+func NormalFromJSON(data []byte) ([]Dist, error) {
 	var resp []struct {
 		Mu    *float64 `json:"mu"`
 		Sigma *float64 `json:"sigma"`
@@ -208,14 +198,7 @@ func NormalFromJSON(rc io.ReadCloser) ([]Dist, error) {
 // Expects the JSON data to be in the form:
 // 	`[{"mu": 123}, {"mu": 3.1415}]`
 // Returns an error if mu value is missing for any arm. Any additional keys are ignored.
-func PointFromJSON(rc io.ReadCloser) ([]Dist, error) {
-	defer rc.Close()
-
-	data, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read data: %w", err)
-	}
-
+func PointFromJSON(data []byte) ([]Dist, error) {
 	var resp []struct {
 		Mu *float64
 	}
