@@ -142,9 +142,9 @@ func WithContextMarshaler(m ContextMarshaler) HTTPSourceOption {
 }
 
 // ParseFunc is an adapter to allow a normal function to be used as a RewardParser
-type ParseFunc func(io.ReadCloser) ([]Dist, error)
+type ParseFunc func([]byte) ([]Dist, error)
 
-func (p ParseFunc) Parse(rc io.ReadCloser) ([]Dist, error) { return p(rc) }
+func (p ParseFunc) Parse(b []byte) ([]Dist, error) { return p(b) }
 
 // MarshalFunc is an adapter to allow a normal function to be used as a ContextMarshaler
 type MarshalFunc func(banditContext interface{}) ([]byte, error)
