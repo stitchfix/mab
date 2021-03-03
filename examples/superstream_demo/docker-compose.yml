@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  reward-service:
+    build:
+      args:
+        service_name: reward
+    environment:
+      - PORT=1337
+    ports:
+      - "1337:80"
+  bandit-service:
+    build:
+      args:
+        service_name: bandit
+    environment:
+      - PORT=1338
+    ports:
+      - "1338:80"
+    depends_on:
+      - reward-service
