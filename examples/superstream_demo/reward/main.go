@@ -20,16 +20,16 @@ func init() {
 
 	campaignRewards[1] = []struct{ Alpha, Beta float64 }{
 		{10, 125},
-		{4, 130},
-		{16, 80},
+		{34, 130},
+		{26, 95},
 		{25, 99},
 	}
 
 	campaignRewards[2] = []struct{ Alpha, Beta float64 }{
 		{25, 125},
-		{5, 50},
-		{7, 90},
-		{13, 200},
+		{10, 50},
+		{7, 35},
+		{57, 200},
 	}
 }
 
