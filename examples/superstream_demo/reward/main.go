@@ -13,32 +13,39 @@ import (
 )
 
 // In a real system, rewards are stored in a DB, but for purposes of the demo we'll just hard-code some example values
-var campaignRewards map[int][]struct{ Alpha, Beta float64 }
+var rewards map[int][]struct{ Alpha, Beta float64 }
 
 func init() {
-	campaignRewards = make(map[int][]struct{ Alpha, Beta float64 })
+	rewards = make(map[int][]struct{ Alpha, Beta float64 })
 
-	campaignRewards[1] = []struct{ Alpha, Beta float64 }{
+	rewards[0] = []struct{ Alpha, Beta float64 }{
 		{10, 125},
 		{34, 130},
 		{26, 95},
 		{25, 99},
 	}
 
-	campaignRewards[2] = []struct{ Alpha, Beta float64 }{
-		{25, 125},
-		{10, 50},
-		{7, 35},
-		{57, 200},
+	rewards[1] = []struct{ Alpha, Beta float64 }{
+		{10, 125},
+		{34, 130},
+		{26, 95},
+		{25, 99},
+	}
+
+	rewards[2] = []struct{ Alpha, Beta float64 }{
+		{50, 250},
+		{20, 105},
+		{20, 75},
+		{110, 399},
 	}
 }
 
 // This function handles incoming post requests to the /rewards endpoint
 func handler(w http.ResponseWriter, r *http.Request) {
 
-	// The request body must contain a JSON object with at least a "campaign_id" key and and integer value
+	// The request body must contain a JSON object with at least a "source_id" key and and integer value
 	var req struct {
-		CampaignID *int `json:"campaign_id"`
+		SourceID *int `json:"source_id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err == io.EOF {
@@ -49,15 +56,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.CampaignID == nil {
-		http.Error(w, "missing required key \"campaign_id\"", http.StatusBadRequest)
+	if req.SourceID == nil {
+		http.Error(w, "missing required key \"source_id\"", http.StatusBadRequest)
 		return
 	}
 
 	// get the context-dependent reward estimates
-	rewards, ok := campaignRewards[*req.CampaignID]
+	rewards, ok := rewards[*req.SourceID]
 	if !ok {
-		http.Error(w, fmt.Sprintf("no rewards for campaign ID %d", *req.CampaignID), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("no rewards for source ID %d", *req.SourceID), http.StatusBadRequest)
 		return
 	}
 
